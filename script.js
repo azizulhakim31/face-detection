@@ -1,18 +1,22 @@
 const video = document.getElementById('video');
 
 Promise.all([
-    faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-    faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-    faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-    faceapi.nets.faceExpressionNet.loadFromUri('/models')
-]).then(startVideo)
+    faceapi.nets.tinyFaceDetector.loadFromUri('models'),
+    faceapi.nets.faceLandmark68Net.loadFromUri('models'),
+    faceapi.nets.faceRecognitionNet.loadFromUri('models'),
+    faceapi.nets.faceExpressionNet.loadFromUri('models')
+]).then(startVideo).catch(err => console.error('Model load failed:', err))
 
 function startVideo() {
-    navigator.getUserMedia(
-        { video: {} },
-        stream => video.srcObject = stream,
-        err => console.error(err)
-    )
+    const getUserMedia = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices) || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+
+    if (!getUserMedia) {
+        return console.error('Browser does not support getUserMedia')
+    }
+
+    getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error('Webcam access failed:', err))
 }
 
 video.addEventListener('play', () => {
